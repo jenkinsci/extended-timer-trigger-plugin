@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<div>
+  This plugin adds another Timer trigger that supports advanced cron syntax, like <b>L</b>, <b>W</b> and <b>#</b>. So can schedule
+  something to run only on the last day of a month, or only on the 2nd Tuesday of a month.
+</div>

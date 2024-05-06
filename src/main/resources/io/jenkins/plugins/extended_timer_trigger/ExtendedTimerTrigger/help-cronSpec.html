@@ -1,0 +1,112 @@
+<div>
+  Trigger runs based on a cron like schedule. You can use the regular Jenkins syntax but also an extended syntax.
+  See the tables below for reference.<br/>
+  The extended syntax doesn't support the <b>H</b> character, so you in order to distribute builds<br/>
+  To specify a different timezone use<br/>
+  <pre>TZ=Europe/London</pre>
+  The timezone can appear anywhere in the list, also multiple times and applies to all following lines until a
+  new timezone definition is found.<br/>
+  To reset the TZ information to the controller timezone use
+  <pre>TZ=</pre>
+
+
+  <table class="jenkins-table">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Allowed Values</th>
+        <th>Allowed Special Characters</th>
+        <th>Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Minutes</td>
+        <td>0-59</td>
+        <td><em>, - * /</em></td>
+        <td/>
+      </tr>
+      <tr>
+        <td>Hours</td>
+        <td>0-23</td>
+        <td><em>, - * /</em></td>
+        <td/>
+      </tr>
+      <tr>
+        <td>Day-of-Month</td>
+        <td>1-31</td>
+        <td><em>, - * / ? L W</em></td>
+        <td/>
+      </tr>
+      <tr>
+        <td>Month</td>
+        <td>1-12 or JAN-DEC</td>
+        <td><em>, - * /</em></td>
+        <td>case doesn't matter</td>
+      </tr>
+      <tr>
+        <td>Day-of-Week</td>
+        <td>0-7 SUN-SAT</td>
+        <td><em>, - * / ? L #</em></td>
+        <td>0 or 7 is sunday, case doesn't matter</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h5>Special Characters</h5>
+  <table class="jenkins-table">
+    <thead>
+      <tr>
+        <th style="word-break: keep-all">Char</th>
+        <th>Description</th>
+  </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>*</td>
+        <td>Matches all values of the field. E.g. <em>*</em> in the minute field means every minute.
+        </td>
+      </tr>
+      <tr>
+        <td>?</td>
+        <td>Stands for 'no specific value' and is allowed for the Day-of-Month and Day-of-Week fields. It is used
+          instead of the asterisk (*) for leaving either Day-of-Month or Day-of-Week blank.
+        </td>
+      </tr>
+      <tr>
+        <td>-</td>
+        <td>Used to define ranges. E.g., <em>10-12</em> in the hour field means the hours of 10, 11, and 12.
+        </td>
+      </tr>
+      <tr>
+        <td>,</td>
+        <td>Used to separate items in a list. E.g., <em>MON,WED,FRI</em> in the Day-of-Week field means the days Monday, Wednesday, and Friday.
+        </td>
+      </tr>
+      <tr>
+        <td>/</td>
+        <td>Used to indicate increments. E.g. <em>0/20</em> in the minutes field means the seconds 0, 20 and 40.
+          <em>1/4</em> in the Day-of-Month field means every 4 days starting on the first day of the month.
+        </td>
+      </tr>
+      <tr>
+        <td>L</td>
+        <td>Short for "last" and can be used in the Day-of-Month and Day-of-Week fields. The <em>L</em> character has a different meaning in
+          the two fields. In the Day-of-Month field, it means the last day of the month. In the Day-of-Week field, it means 6 or SAT.
+          If used in the Day-of-Week field after a number, it means the last xxx day of the month. E.g., <em>6L</em> in the Day-of-Week field means
+          the last Saturday of the month.
+        </td>
+      </tr>
+      <tr><td>W</td>
+        <td><em>W</em> Stands for "weekday" and is only allowed for the Day-of-Month field. The <em>W</em> character is used to specify the weekday nearest
+          to the given day. E.g., <em>10W</em> in the Day-of-Month field means the nearest weekday to the 10th of the month. If the 10th is a Saturday,
+          the job will run on Friday the 10th. <em>W</em> can be combined with <em>L</em> to <em>LW</em> and means last weekday of the month.
+        </td>
+      </tr>
+      <tr>
+        <td>#</td>
+        <td>Can only be used in the Day-of-Week field. Used to specify constructs. E.g., <em>5#3</em> means the third Friday of the month. </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
