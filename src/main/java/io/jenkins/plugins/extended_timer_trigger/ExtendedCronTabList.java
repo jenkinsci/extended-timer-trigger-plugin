@@ -153,7 +153,7 @@ public class ExtendedCronTabList {
         } catch (IllegalArgumentException e) {
           LOGGER.log(Level.FINER, "Crontab line {0} is not a Jenkins syntax crontab: {1}", new Object[]{lineNumber, line});
           LOGGER.log(Level.FINEST, "Error", e);
-          cronList.add(new ExtendedCronTab(line, timeZoneId));
+          cronList.add(new ExtendedCronTab(line, timeZoneId, hash));
         }
       }
       if (!cronTabListLines.isEmpty()) {

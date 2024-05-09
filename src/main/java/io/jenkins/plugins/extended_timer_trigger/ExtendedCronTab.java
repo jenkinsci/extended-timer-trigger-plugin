@@ -5,6 +5,7 @@ import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import hudson.scheduler.Hash;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import org.kohsuke.accmod.Restricted;
@@ -26,10 +27,34 @@ public class ExtendedCronTab {
   private final Cron cron;
   private final ZoneId zoneId;
 
-  public ExtendedCronTab(String spec, ZoneId zoneId) {
-    this.cron = parser.parse(spec);
+  public ExtendedCronTab(String spec, ZoneId zoneId, Hash hash) {
+    this.cron = parser.parse(translateHash(spec, hash));
     this.zoneId = zoneId;
   }
+
+  private String translateHash(String spec, Hash hash) {
+    if (hash == null) {
+      hash = Hash.zero();
+    }
+    String[] tokens = spec.split(" ");
+    if (tokens.length != 5) {
+      return spec;
+    }
+    if (tokens[0].equals("H")) {
+      tokens[0] = "" + hash.next(60);
+    }
+    if (tokens[1].equals("H")) {
+      tokens[1] = "" + hash.next(24);
+    }
+    if (tokens[3].equals("H")) {
+      tokens[3] = "" + hash.next(12) + 1;
+    }
+    if (tokens[4].equals("H")) {
+      tokens[4] = "" + hash.next(7);
+    }
+    return String.join(" ", tokens);
+  }
+
 
   public boolean check(ZonedDateTime time) {
     if (zoneId != null) {

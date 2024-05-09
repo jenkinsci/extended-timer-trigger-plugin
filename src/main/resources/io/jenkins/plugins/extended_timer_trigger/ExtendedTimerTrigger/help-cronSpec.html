@@ -1,7 +1,7 @@
 <div>
   Trigger runs based on a cron like schedule. You can use the regular Jenkins syntax but also an extended syntax.
   See the tables below for reference.<br/>
-  The extended syntax doesn't support the <b>H</b> character, so you in order to distribute builds<br/>
+  The extended syntax has limited support for the <b>H</b> character. It can only be used standalone and not in combination with ranges or intervals.<br/>
   To specify a different timezone use<br/>
   <pre>TZ=Europe/London</pre>
   The timezone can appear anywhere in the list, also multiple times and applies to all following lines until a
@@ -23,13 +23,13 @@
       <tr>
         <td>Minutes</td>
         <td>0-59</td>
-        <td><em>, - * /</em></td>
+        <td><em>, - * / H</em></td>
         <td/>
       </tr>
       <tr>
         <td>Hours</td>
         <td>0-23</td>
-        <td><em>, - * /</em></td>
+        <td><em>, - * / H</em></td>
         <td/>
       </tr>
       <tr>
@@ -41,13 +41,13 @@
       <tr>
         <td>Month</td>
         <td>1-12 or JAN-DEC</td>
-        <td><em>, - * /</em></td>
+        <td><em>, - * / H</em></td>
         <td>case doesn't matter</td>
       </tr>
       <tr>
         <td>Day-of-Week</td>
         <td>0-7 SUN-SAT</td>
-        <td><em>, - * / ? L #</em></td>
+        <td><em>, - * / ? L # H</em></td>
         <td>0 or 7 is sunday, case doesn't matter</td>
       </tr>
     </tbody>
@@ -105,7 +105,12 @@
       </tr>
       <tr>
         <td>#</td>
-        <td>Can only be used in the Day-of-Week field. Used to specify constructs. E.g., <em>5#3</em> means the third Friday of the month. </td>
+        <td>Can only be used in the Day-of-Week field. Used to specify constructs. E.g., <em>5#3</em> means the third Friday of the month.</td>
+      </tr>
+      <tr>
+        <td>H</td>
+        <td>Stands for a random value (based on the hash of the job name). Can be used in all fields except Day-of-Month.
+          If used it must be the only value (intervals and ranges are not supported).</td>
       </tr>
     </tbody>
   </table>
