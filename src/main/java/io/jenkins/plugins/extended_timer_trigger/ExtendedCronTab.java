@@ -46,6 +46,9 @@ public class ExtendedCronTab {
     if (tokens[1].equals("H")) {
       tokens[1] = "" + hash.next(24);
     }
+    if (tokens[2].equals("H")) {
+      tokens[2] = "" + hash.next(28) + 1;
+    }
     if (tokens[3].equals("H")) {
       tokens[3] = "" + hash.next(12) + 1;
     }
