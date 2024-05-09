@@ -14,7 +14,7 @@
   <version>${changelist}</version>
   <packaging>hpi</packaging>
 
-  <name>Extended Time Trigger</name>
+  <name>Extended Timer Trigger</name>
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   <licenses>
     <license>

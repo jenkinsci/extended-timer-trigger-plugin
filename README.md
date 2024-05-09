@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This plugin add another 
+This plugin adds another timer based trigger to jobs. It has an extended syntax that allows for better scheduling of weekly or monthly triggers. 
 
 ## Getting started
 
