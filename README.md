@@ -45,12 +45,13 @@ In the extended syntax the special character `H` from Jenkins (which stands for 
 | #    |  Can only be used in the Day-of-Week field. Used to specify constructs. E.g., <em>5#3</em> means the third Friday of the month.                                                                                                                                                                                                                                                                                                                                                                                                                                      | 
 
 
-Lines starting with `#` are comments. You can also add comments with `//` after a cron entry
+Lines starting with `#` are comments. You can also add comments with `//` after a cron entry. `#` is not allowed to make the rest of the line a comment.
 ## Samples
 ```
 0 5 L * *  // run at 5:00 on the last day of the month, run in the controller timezone
 0 5 LW * *  // run at 5:00 on the last workday (Mon-Fri) of the month
 
+# This is a comment
 TZ=Europe/Berlin
 0 5 * * THUL  // run at 5:00 on the last Thursday of the month in timezone Europe/Berlin
 0 5 ? * 2#3  // run at 5:00 on the third Tuesday of every month
@@ -58,6 +59,7 @@ TZ=Europe/Berlin
 TZ=America/Toronto
 0 5 * FEB WED#2 // run at 5:00 on the second Wednesday in February, runs in timezone America/Toronto
 
+// Reset the timezone to the controller timezone
 TZ=
 H 12 * * 5  // Jenkins syntax, runs in the controller timezone
 H 5 * * *   // run once between 5:00 and 5:59 every day, this is the standard Jenkins syntax, this can't be combined with
