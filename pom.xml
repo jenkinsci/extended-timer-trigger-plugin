@@ -31,7 +31,7 @@
 
   <properties>
     <jenkins.base>2.426</jenkins.base>
-    <changelist>99999-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.version>${jenkins.base}.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
