@@ -8,6 +8,8 @@ import com.cronutils.parser.CronParser;
 import hudson.scheduler.Hash;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -24,6 +26,12 @@ public class ExtendedCronTab {
 
   private static final CronParser parser = new CronParser(cronDefinition);
 
+  private static final int[] LOWER_BOUNDS = new int[] {0, 0, 1, 1, 0};
+  private static final int[] UPPER_BOUNDS = new int[] {59, 23, 28, 12, 6};
+  private static final String[] FIELD_NAMES = new String[] {"Minute", "Hour", "Day-of-Month", "Month", "Day-of-Week"};
+
+  private static final Pattern pattern = Pattern.compile("^H\\((\\d)+-(\\d+)\\)$");
+
   private final Cron cron;
   private final ZoneId zoneId;
 
@@ -31,6 +39,7 @@ public class ExtendedCronTab {
     this.cron = parser.parse(translateHash(spec, hash));
     this.zoneId = zoneId;
   }
+
 
   private String translateHash(String spec, Hash hash) {
     if (hash == null) {
@@ -40,24 +49,37 @@ public class ExtendedCronTab {
     if (tokens.length != 5) {
       return spec;
     }
-    if (tokens[0].equals("H")) {
-      tokens[0] = "" + hash.next(60);
-    }
-    if (tokens[1].equals("H")) {
-      tokens[1] = "" + hash.next(24);
-    }
-    if (tokens[2].equals("H")) {
-      tokens[2] = "" + hash.next(28) + 1;
-    }
-    if (tokens[3].equals("H")) {
-      tokens[3] = "" + hash.next(12) + 1;
-    }
-    if (tokens[4].equals("H")) {
-      tokens[4] = "" + hash.next(7);
-    }
+    processHash(tokens, 0, hash);
+    processHash(tokens, 1, hash);
+    processHash(tokens, 2, hash);
+    processHash(tokens, 3, hash);
+    processHash(tokens, 4, hash);
     return String.join(" ", tokens);
   }
 
+  private void processHash(String[] tokens, int field, Hash hash) {
+    int lowerBound = LOWER_BOUNDS[field];
+    int upperBound = UPPER_BOUNDS[field];
+    if (tokens[field].equals("H")) {
+      tokens[field] = String.valueOf(hash.next(upperBound) + lowerBound);
+      return;
+    }
+    Matcher m = pattern.matcher(tokens[field]);
+    if (m.matches()) {
+      int lower = Integer.parseInt(m.group(1));
+      int upper = Integer.parseInt(m.group(2));
+      if (lower < lowerBound) {
+        throw new IllegalArgumentException(Messages.ExtendedCronTab_OutOfRange(lower, lowerBound, upperBound, FIELD_NAMES[field]));
+      }
+      if (upper > upperBound) {
+        throw new IllegalArgumentException(Messages.ExtendedCronTab_OutOfRange(upper, lowerBound, upperBound, FIELD_NAMES[field]));
+      }
+      if (lower > upper) {
+        throw new IllegalArgumentException(Messages.ExtendedCronTab_LowerUpper(lower, upper));
+      }
+      tokens[field] = String.valueOf(hash.next(upper + 1 - lower) + lower);
+    }
+  }
 
   public boolean check(ZonedDateTime time) {
     if (zoneId != null) {

@@ -17,8 +17,7 @@ You can add one or more cron like entries with the 5 fields
 You can use the same syntax as for the Jenkins provided `Build periodically` but also an extended syntax to e.g. run a job on the last 
 day of a month, or only on the second Tuesday, or on the last weekday.
 
-In the extended syntax the special character `H` has limited support. It can only be used standalone and not in combination
-with ranges or intervals.
+In the extended syntax the special character `H` has limited support. It can only be used standalone or in combination with a range e.g. *H(0-4)*
 
 ### Fields 
 
@@ -43,7 +42,7 @@ with ranges or intervals.
 | L     | Short for "last" and can be used in the Day-of-Month and Day-of-Week fields. The <em>L</em> character has a different meaning in the two fields. In the Day-of-Month field, it means the last day of the month. In the Day-of-Week field, it means 6 or SAT. If used in the Day-of-Week field after a number, it means the last xxx day of the month. E.g., <em>6L</em> in the Day-of-Week field means the last Saturday of the month. |
 | W     | Stands for "weekday" and is only allowed for the Day-of-Month field. The <em>W</em> character is used to specify the weekday nearest to the given day. E.g., <em>10W</em> in the Day-of-Month field means the nearest weekday to the 10th of the month. If the 10th is a Saturday, the job will run on Friday the 10th. <em>W</em> can be combined with <em>L</em> to <em>LW</em> and means last weekday of the month.                 |
 | #     | Can only be used in the Day-of-Week field. Used to specify constructs. E.g., <em>5#3</em> means the third Friday of the month.                                                                                                                                                                                                                                                                                                         |
-| H     | Stands for a random value (based on the hash of the job name). If used it must be the only value (intervals or ranges are not supported). In the Day-of-Month field values are chosen in the 1-28 range.                                                                                                                                                                                                                               |
+| H     | Stands for a random value (based on the hash of the job name). Must be used standalone or in combination with a range e.g. *H(0-4)*. In the Day-of-Month field values are chosen in the 1-28 range.                                                                                                                                                                                                                                    |
 
 
 
