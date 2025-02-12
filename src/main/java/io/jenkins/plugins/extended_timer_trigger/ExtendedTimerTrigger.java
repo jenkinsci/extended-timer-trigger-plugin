@@ -115,8 +115,8 @@ public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
       ZonedDateTime prev = ectl.previous();
       ZonedDateTime next = ectl.next();
       if (prev != null && next != null) {
-        Locale locale = Stapler.getCurrentRequest() != null
-            ? Stapler.getCurrentRequest().getLocale()
+        Locale locale = Stapler.getCurrentRequest2() != null
+            ? Stapler.getCurrentRequest2().getLocale()
             : Locale.getDefault();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm zzz", locale);
         validations.add(FormValidation.ok(Messages.ExtendedTimerTrigger_would_last_have_run_at_would_next_run_at(prev.format(formatter), next.format(formatter))));
