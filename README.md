@@ -3,6 +3,7 @@
 ## Introduction
 
 This plugin adds another timer based trigger to jobs. It has an extended syntax that allows for better scheduling of weekly or monthly triggers. 
+It also allows to define the timezone multiple times in the list and you can specify parameters to be passed for executions.
 
 ## Getting started
 
@@ -43,10 +44,12 @@ In the extended syntax the special character `H` has limited support. It can onl
 | W     | Stands for "weekday" and is only allowed for the Day-of-Month field. The <em>W</em> character is used to specify the weekday nearest to the given day. E.g., <em>10W</em> in the Day-of-Month field means the nearest weekday to the 10th of the month. If the 10th is a Saturday, the job will run on Friday the 10th. <em>W</em> can be combined with <em>L</em> to <em>LW</em> and means last weekday of the month.                 |
 | #     | Can only be used in the Day-of-Week field. Used to specify constructs. E.g., <em>5#3</em> means the third Friday of the month.                                                                                                                                                                                                                                                                                                         |
 | H     | Stands for a random value (based on the hash of the job name). Must be used standalone or in combination with a range e.g. *H(0-4)*. In the Day-of-Month field values are chosen in the 1-28 range.                                                                                                                                                                                                                                    |
+### Parameters
+To define parameters that should be passed to a schedule start the next line with a `%` followed by `name=value`.
+If you want to have a parameter take a multiline value prefix the next line with `%%`. For better readability you might want to indent the parameter definitions. Each line after the cron spec that starts with `%` is interpreted as parameter until a new cron spec or timezone definition is found.
 
-
-
-Lines starting with `#` are comments. You can also add comments with `//` after a cron entry. `#` is not allowed to make the rest of the line a comment.
+### Comments
+Lines starting with `#` are comments. You can also add comments with `//` after a cron entry but not in parameters. `#` is not allowed to make the rest of the line a comment.
 ## Samples
 ```
 0 5 L * *  // run at 5:00 on the last day of the month, run in the controller timezone
@@ -65,6 +68,13 @@ TZ=
 H 12 * * 5  // Jenkins syntax, runs in the controller timezone
 H 5 * * *   // run once between 5:00 and 5:59 every day, this is the standard Jenkins syntax, this can't be combined with
             // L, W or #
+
+// Schedule with parameters
+0 12 L * * *
+  %param1=foo;bar
+  %param2=bar
+  %%baz
+  %param3=value // this is not a comment
 ```
 
 ## Contributing

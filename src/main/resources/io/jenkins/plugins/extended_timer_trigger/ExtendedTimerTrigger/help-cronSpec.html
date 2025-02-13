@@ -2,15 +2,31 @@
   Trigger runs based on a cron like schedule. You can use the regular Jenkins syntax but also an extended syntax.
   See the tables below for reference.<br/>
   The extended syntax has limited support for the <b>H</b> character. It can only be used standalone and not in combination with ranges or intervals.<br/>
-  To specify a different timezone use<br/>
+  <br/>
+  <b>Timezone</b><br/>
+  To specify a different timezone use
   <pre>TZ=Europe/London</pre>
   The timezone can appear anywhere in the list, also multiple times and applies to all following lines until a
   new timezone definition is found.<br/>
   To reset the TZ information to the controller timezone use
   <pre>TZ=</pre>
+  <br/>
+  <b>Parameters</b><br/>
+  To define parameters that should be passed to a schedule start the next line with a <em>%</em> followed by `name=value`.
+  If you want to have a parameter take a multiline value prefix the next line with <em>%%</em>. For better readability you might want to indent the parameter definitions.
+  Each line after the cron spec that starts with `%` is interpreted as parameter until a new cron spec or timezone definition is found.
+  <pre>0 12 L * * *
+  %param1=foo;bar
+  %param2=bar
+  %%baz
+  %param3=value // this is not a comment
+  </pre>
 
-
-  <table class="jenkins-table">
+  <b>Comments</b><br/>
+  Lines starting with `#` are comments. You can also add comments with `//` after a cron entry but not in parameters. `#` is not allowed to make the rest of the line a comment.
+  <br/>
+  <b>Extendend Cron Syntax</b><br/>
+   <table class="jenkins-table">
     <thead>
       <tr>
         <th>Field</th>

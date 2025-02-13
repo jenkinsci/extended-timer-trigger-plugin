@@ -4,8 +4,16 @@ import static hudson.Util.fixNull;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildableItem;
+import hudson.model.CauseAction;
 import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.PeriodicWork;
 import hudson.scheduler.Hash;
 import hudson.triggers.TimerTrigger;
@@ -17,13 +25,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.triggers.TriggeredItem;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -36,7 +47,7 @@ import org.kohsuke.stapler.verb.POST;
  * Trigger that runs a job periodically.
  */
 @Restricted(NoExternalUse.class)
-public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
+public class ExtendedTimerTrigger extends Trigger<Job<?, ?>> {
 
   private static final Logger LOGGER = Logger.getLogger(ExtendedTimerTrigger.class.getName());
 
@@ -54,7 +65,7 @@ public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
   }
 
   @Override
-  public void start(BuildableItem project, boolean newInstance) {
+  public void start(Job<?, ?> project, boolean newInstance) {
     this.job = project;
     Hash hash = Hash.from(project.getFullName());
 
@@ -69,11 +80,6 @@ public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
 
   @Override
   public void run() {
-    if (job == null) {
-      return;
-    }
-
-    job.scheduleBuild(0, new ExtendenTimerTriggerCause());
   }
 
 
@@ -126,11 +132,50 @@ public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
     }
   }
 
-  public boolean check(ZonedDateTime time) {
-    if (extendedCronTabList != null) {
-      return extendedCronTabList.check(time);
+  private List<ParameterValue> configureParameterValues(Map<String, String> parameterValues) {
+    assert job != null : "job must not be null if this was 'started'";
+    ParametersDefinitionProperty paramDefProp = job
+        .getProperty(ParametersDefinitionProperty.class);
+    List<ParameterValue> defValues = new ArrayList<>();
+
+    /* Scan for all parameter with an associated default values */
+    for (ParameterDefinition paramDefinition : paramDefProp.getParameterDefinitions()) {
+      ParameterValue defaultValue = paramDefinition.getDefaultParameterValue();
+
+      if (parameterValues.containsKey(paramDefinition.getName())) {
+        ParamStaplerRequest request = new ParamStaplerRequest(
+            parameterValues.get(paramDefinition.getName()));
+        ParameterValue value = paramDefinition.createValue(request);
+        if (value != null) {
+          defValues.add(value);
+        } else {
+          LOGGER.warning("Cannot create value for " + paramDefinition.getName());
+        }
+      } else if (defaultValue != null) {
+        defValues.add(defaultValue);
+      }
     }
-    return false;
+
+    return defValues;
+  }
+
+  public void checkAndRun(ZonedDateTime time) {
+    if (extendedCronTabList != null) {
+      List<CronTabWrapper> cronTabWrapperList = extendedCronTabList.getCronTabWrapperList();
+      cronTabWrapperList.stream().filter(it -> it.check(time)).forEach(cronTab -> {
+        Map<String, String> parameters = cronTab.getParameters();
+        List<Action> actions = new ArrayList<>();
+        actions.add(new CauseAction(new ExtendenTimerTriggerCause()));
+        if (parameters != null ) {
+          actions.add(new ParametersAction(configureParameterValues(parameters)));
+        }
+        if (job instanceof AbstractProject<?, ?> project) {
+          project.scheduleBuild2(0, actions.toArray(new Action[0]));
+        } else if (job instanceof WorkflowJob pipeline) {
+          pipeline.scheduleBuild2(0,  actions.toArray(new Action[0]));
+        }
+      });
+    }
   }
 
   public static class ExtendenTimerTriggerCause extends TimerTrigger.TimerTriggerCause {
@@ -147,7 +192,7 @@ public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
     ZonedDateTime zdt = ZonedDateTime.now();
 
     public CronWork() {
-      zdt = zdt.minusSeconds(zdt.getSecond());
+      zdt = zdt.minusSeconds(zdt.getSecond()).plusMinutes(1);
     }
 
     @Override
@@ -173,12 +218,8 @@ public class ExtendedTimerTrigger extends Trigger<BuildableItem> {
       Jenkins jenkins = Jenkins.get();
       jenkins.allItems(TriggeredItem.class).forEach(item -> {
         for (Trigger<?> t: item.getTriggers().values()) {
-          if (t instanceof ExtendedTimerTrigger) {
-            ExtendedTimerTrigger trigger = (ExtendedTimerTrigger) t;
-            if (trigger.check(time)) {
-              trigger.run();
-              break;
-            }
+          if (t instanceof ExtendedTimerTrigger trigger) {
+            trigger.checkAndRun(time);
           }
         }
       });
