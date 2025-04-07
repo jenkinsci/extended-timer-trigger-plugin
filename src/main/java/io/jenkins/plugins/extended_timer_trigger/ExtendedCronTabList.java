@@ -71,7 +71,7 @@ public class ExtendedCronTabList {
 
   private void load(String cronSpec, Hash hash) {
     int lineNumber = 0;
-    String timezone = null;
+    String timezone = "";
     ZoneId timeZoneId = null;
     boolean isParamLine = false;
     String currentParameterName = null;
@@ -142,8 +142,10 @@ public class ExtendedCronTabList {
             LOGGER.log(Level.FINER, "Found timezone: {0}", timezone);
             if (timezone.isEmpty()) {
               timeZoneId = null;
+              timezone = "";
             } else {
               timeZoneId = ZoneId.of(line.substring(3));
+              timezone = line;
             }
             continue;
           } catch (DateTimeException e) {
@@ -153,7 +155,8 @@ public class ExtendedCronTabList {
         }
 
         try {
-          CronTabList cronTab = CronTabList.create(line, hash);
+          String cronTabLine = timezone + "\n" + line;
+          CronTabList cronTab = CronTabList.create(cronTabLine, hash);
           currentCronTab = new CronTabWrapper(cronTab);
           LOGGER.log(Level.FINER, "Crontab line {0} has Jenkins syntax: {1}", new Object[]{lineNumber, line});
         } catch (IllegalArgumentException e) {
