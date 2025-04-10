@@ -7,12 +7,12 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ExtendedCronTabListTest {
+class ExtendedCronTabListTest {
 
   @Test
-  public void noParameter() {
+  void noParameter() {
     String spec = """
         H 22 * * *
         """;
@@ -26,7 +26,7 @@ public class ExtendedCronTabListTest {
   }
 
   @Test
-  public void singleParameter() {
+  void singleParameter() {
     String spec = """
         H 22 * * *
           %p1=test
@@ -42,7 +42,7 @@ public class ExtendedCronTabListTest {
   }
 
   @Test
-  public void multipleParameter() {
+  void multipleParameter() {
     String spec = """
         H 22 * * *
           %p1=test
@@ -63,7 +63,7 @@ public class ExtendedCronTabListTest {
   }
 
   @Test
-  public void multipleParamMultiCron() {
+  void multipleParamMultiCron() {
     String spec = """
         H 22 * * *
           %p1=test
@@ -106,7 +106,7 @@ public class ExtendedCronTabListTest {
   }
 
   @Test
-  public void singleMultilineParameter() {
+  void singleMultilineParameter() {
     String spec = """
         H 22 * * *
         %p1=test
@@ -123,7 +123,7 @@ public class ExtendedCronTabListTest {
   }
 
   @Test
-  public void ignoreParamAfterTZ() {
+  void ignoreParamAfterTZ() {
     String spec = """
         H 22 * * *
           %p1=test
