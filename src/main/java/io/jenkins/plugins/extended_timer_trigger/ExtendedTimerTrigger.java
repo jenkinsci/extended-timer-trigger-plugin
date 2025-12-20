@@ -35,8 +35,6 @@ import jenkins.model.Jenkins;
 import jenkins.triggers.TriggeredItem;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -46,7 +44,6 @@ import org.kohsuke.stapler.verb.POST;
 /**
  * Trigger that runs a job periodically.
  */
-@Restricted(NoExternalUse.class)
 public class ExtendedTimerTrigger extends Trigger<Job<?, ?>> {
 
   private static final Logger LOGGER = Logger.getLogger(ExtendedTimerTrigger.class.getName());
@@ -62,6 +59,10 @@ public class ExtendedTimerTrigger extends Trigger<Job<?, ?>> {
 
   public String getCronSpec() {
     return cronSpec;
+  }
+
+  public ExtendedCronTabList getExtendedCronTabList() {
+    return extendedCronTabList;
   }
 
   @Override

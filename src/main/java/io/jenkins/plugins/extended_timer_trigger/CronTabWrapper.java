@@ -1,29 +1,30 @@
 package io.jenkins.plugins.extended_timer_trigger;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.suppressions.SuppressRestrictedWarnings;
 
-@Restricted(NoExternalUse.class)
 public class CronTabWrapper {
 
-  private final CronTabList cronTab;
+  private final CronTabList cronTabList;
+  private final CronTab cronTab;
   private final ExtendedCronTab extendedCronTab;
   private Map<String, String> parameters;
 
-  public CronTabWrapper(CronTabList cronTab) {
-    this.cronTab = cronTab;
+  public CronTabWrapper(CronTabList cronTabList, CronTab cronTab) {
+    this.cronTabList = cronTabList;
     this.extendedCronTab = null;
+    this.cronTab = cronTab;
   }
 
   public CronTabWrapper(ExtendedCronTab extendedCronTab) {
     this.extendedCronTab = extendedCronTab;
+    this.cronTabList = null;
     this.cronTab = null;
   }
 
@@ -37,9 +38,9 @@ public class CronTabWrapper {
   }
 
   public boolean check(ZonedDateTime time) {
-    if (cronTab != null) {
+    if (cronTabList != null) {
       Calendar cal = GregorianCalendar.from(time);
-      return cronTab.check(cal);
+      return cronTabList.check(cal);
     } else {
       if (extendedCronTab != null) {
         return extendedCronTab.check(time);
@@ -51,8 +52,8 @@ public class CronTabWrapper {
   @CheckForNull
   @SuppressRestrictedWarnings(CronTabList.class)
   public ZonedDateTime previous() {
-    if (cronTab != null) {
-      Calendar scheduled = cronTab.previous();
+    if (cronTabList != null) {
+      Calendar scheduled = cronTabList.previous();
       if (scheduled != null) {
         return ZonedDateTime.ofInstant(scheduled.toInstant(), scheduled.getTimeZone().toZoneId());
       }
@@ -64,10 +65,11 @@ public class CronTabWrapper {
     return null;
   }
 
+  @CheckForNull
   @SuppressRestrictedWarnings(CronTabList.class)
   public ZonedDateTime next() {
-    if (cronTab != null) {
-      Calendar scheduled = cronTab.next();
+    if (cronTabList != null) {
+      Calendar scheduled = cronTabList.next();
       if (scheduled != null) {
         return ZonedDateTime.ofInstant(scheduled.toInstant(), scheduled.getTimeZone().toZoneId());
       }
@@ -80,9 +82,35 @@ public class CronTabWrapper {
   }
 
   @CheckForNull
-  public String checkSanity() {
+  public ZonedDateTime ceil(long timeInMillis) {
     if (cronTab != null) {
-      return cronTab.checkSanity();
+      Calendar scheduled = cronTab.ceil(timeInMillis);
+      return ZonedDateTime.ofInstant(scheduled.toInstant(), scheduled.getTimeZone().toZoneId());
+    } else {
+      if (extendedCronTab != null) {
+        return extendedCronTab.ceil(timeInMillis);
+      }
+    }
+    return null;
+  }
+
+  @CheckForNull
+  public ZonedDateTime floor(long timeInMillis) {
+    if (cronTab != null) {
+      Calendar scheduled = cronTab.floor(timeInMillis);
+      return ZonedDateTime.ofInstant(scheduled.toInstant(), scheduled.getTimeZone().toZoneId());
+    } else {
+      if (extendedCronTab != null) {
+        return extendedCronTab.floor(timeInMillis);
+      }
+    }
+    return null;
+  }
+
+  @CheckForNull
+  public String checkSanity() {
+    if (cronTabList != null) {
+      return cronTabList.checkSanity();
     }
     return null;
   }
