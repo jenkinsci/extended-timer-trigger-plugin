@@ -6,6 +6,7 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import hudson.scheduler.Hash;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.regex.Matcher;
@@ -96,8 +97,26 @@ public class ExtendedCronTab {
     return ExecutionTime.forCron(cron).nextExecution(time).orElse(null);
   }
 
+  public ZonedDateTime ceil(long timeInMillis) {
+    Instant instant = Instant.ofEpochMilli(timeInMillis);
+    ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+    if (zoneId != null) {
+      time = time.withZoneSameInstant(zoneId);
+    }
+    return ExecutionTime.forCron(cron).nextExecution(time).orElse(null);
+  }
+
   public ZonedDateTime previous() {
     ZonedDateTime time = ZonedDateTime.now();
+    if (zoneId != null) {
+      time = time.withZoneSameInstant(zoneId);
+    }
+    return ExecutionTime.forCron(cron).lastExecution(time).orElse(null);
+  }
+
+  public ZonedDateTime floor(long timeInMillis) {
+    Instant instant = Instant.ofEpochMilli(timeInMillis);
+    ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
     if (zoneId != null) {
       time = time.withZoneSameInstant(zoneId);
     }

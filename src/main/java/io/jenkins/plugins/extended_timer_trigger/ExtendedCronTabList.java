@@ -1,21 +1,21 @@
 package io.jenkins.plugins.extended_timer_trigger;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.suppressions.SuppressRestrictedWarnings;
 
-@Restricted(NoExternalUse.class)
 public class ExtendedCronTabList {
 
   private static final Logger LOGGER = Logger.getLogger(ExtendedCronTabList.class.getName());
@@ -32,9 +32,10 @@ public class ExtendedCronTabList {
   }
 
   List<CronTabWrapper> getCronTabWrapperList() {
-    return cronTabWrapperList;
+    return Collections.unmodifiableList(cronTabWrapperList);
   }
 
+  @CheckForNull
   public String checkSanity() {
     for (CronTabWrapper ctl: cronTabWrapperList) {
       String s = ctl.checkSanity();
@@ -45,6 +46,7 @@ public class ExtendedCronTabList {
     return null;
   }
 
+  @CheckForNull
   @SuppressRestrictedWarnings(CronTabList.class)
   public ZonedDateTime previous() {
     ZonedDateTime previous = null;
@@ -57,6 +59,7 @@ public class ExtendedCronTabList {
     return previous;
   }
 
+  @CheckForNull
   @SuppressRestrictedWarnings(CronTabList.class)
   public ZonedDateTime next() {
     ZonedDateTime next = null;
@@ -67,6 +70,30 @@ public class ExtendedCronTabList {
       }
     }
     return next;
+  }
+
+  @CheckForNull
+  public ZonedDateTime ceil(long timestamp) {
+    ZonedDateTime ceil = null;
+    for (CronTabWrapper wrapper: cronTabWrapperList) {
+      ZonedDateTime scheduled = wrapper.ceil(timestamp);
+      if (ceil == null || (scheduled != null && ceil.isAfter(scheduled))) {
+        ceil = scheduled;
+      }
+    }
+    return ceil;
+  }
+
+  @CheckForNull
+  public ZonedDateTime floor(long timestamp) {
+    ZonedDateTime floor = null;
+    for (CronTabWrapper wrapper: cronTabWrapperList) {
+      ZonedDateTime scheduled = wrapper.floor(timestamp);
+      if (floor == null || (scheduled != null && floor.isBefore(scheduled))) {
+        floor = scheduled;
+      }
+    }
+    return floor;
   }
 
   private void load(String cronSpec, Hash hash) {
@@ -155,9 +182,9 @@ public class ExtendedCronTabList {
         }
 
         try {
-          String cronTabLine = timezone + "\n" + line;
-          CronTabList cronTab = CronTabList.create(cronTabLine, hash);
-          currentCronTab = new CronTabWrapper(cronTab);
+          CronTab cronTab = new CronTab(line, lineNumber, hash, timezone);
+          CronTabList cronTabList = new CronTabList(List.of(cronTab));
+          currentCronTab = new CronTabWrapper(cronTabList, cronTab);
           LOGGER.log(Level.FINER, "Crontab line {0} has Jenkins syntax: {1}", new Object[]{lineNumber, line});
         } catch (IllegalArgumentException e) {
           LOGGER.log(Level.FINER, "Crontab line {0} is not a Jenkins syntax crontab: {1}", new Object[]{lineNumber, line});
