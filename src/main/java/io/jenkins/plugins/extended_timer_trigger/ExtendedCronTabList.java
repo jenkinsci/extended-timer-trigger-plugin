@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.kohsuke.accmod.restrictions.suppressions.SuppressRestrictedWarnings;
 
 public class ExtendedCronTabList {
 
@@ -47,7 +46,6 @@ public class ExtendedCronTabList {
   }
 
   @CheckForNull
-  @SuppressRestrictedWarnings(CronTabList.class)
   public ZonedDateTime previous() {
     ZonedDateTime previous = null;
     for (CronTabWrapper wrapper: cronTabWrapperList) {
@@ -60,7 +58,6 @@ public class ExtendedCronTabList {
   }
 
   @CheckForNull
-  @SuppressRestrictedWarnings(CronTabList.class)
   public ZonedDateTime next() {
     ZonedDateTime next = null;
     for (CronTabWrapper wrapper: cronTabWrapperList) {
@@ -70,6 +67,26 @@ public class ExtendedCronTabList {
       }
     }
     return next;
+  }
+
+  /**
+   * The next CronTabWrapper to be triggered.
+   * If 2 triggers are scheduled for the same time, only the first one
+   * that is specified in the spec is returned.
+   * @return
+   */
+  @CheckForNull
+  public CronTabWrapper nextCronTabWrapper() {
+    CronTabWrapper nextCronTab = null;
+    ZonedDateTime next = null;
+    for (CronTabWrapper wrapper: cronTabWrapperList) {
+      ZonedDateTime scheduled = wrapper.next();
+      if (next == null || (scheduled != null && next.isAfter(scheduled))) {
+        nextCronTab = wrapper;
+        next = scheduled;
+      }
+    }
+    return nextCronTab;
   }
 
   @CheckForNull
