@@ -30,7 +30,7 @@ public class ExtendedCronTabList {
     return ectl;
   }
 
-  List<CronTabWrapper> getCronTabWrapperList() {
+  public List<CronTabWrapper> getCronTabWrapperList() {
     return Collections.unmodifiableList(cronTabWrapperList);
   }
 
