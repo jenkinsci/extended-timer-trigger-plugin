@@ -188,8 +188,7 @@ public class ExtendedCronTabList {
               timeZoneId = null;
               timezone = "";
             } else {
-              timeZoneId = ZoneId.of(line.substring(3));
-              timezone = line;
+              timeZoneId = ZoneId.of(timezone);
             }
             continue;
           } catch (DateTimeException e) {
