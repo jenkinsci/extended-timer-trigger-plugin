@@ -1,5 +1,6 @@
 package io.jenkins.plugins.extended_timer_trigger;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
@@ -26,6 +27,11 @@ public class CronTabWrapper {
     this.extendedCronTab = extendedCronTab;
     this.cronTabList = null;
     this.cronTab = null;
+  }
+
+  @VisibleForTesting
+  CronTab getCronTab() {
+    return cronTab;
   }
 
   public void setParameters(Map<String, String> parameters) {

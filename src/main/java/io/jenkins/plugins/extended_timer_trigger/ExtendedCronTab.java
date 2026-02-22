@@ -46,7 +46,7 @@ public class ExtendedCronTab {
     if (hash == null) {
       hash = Hash.zero();
     }
-    String[] tokens = spec.split(" ");
+    String[] tokens = spec.split(" +");
     if (tokens.length != 5) {
       return spec;
     }

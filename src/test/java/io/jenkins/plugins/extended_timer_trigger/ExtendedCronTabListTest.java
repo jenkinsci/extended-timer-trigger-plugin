@@ -1,12 +1,12 @@
 package io.jenkins.plugins.extended_timer_trigger;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import org.junit.jupiter.api.Test;
 
 class ExtendedCronTabListTest {
@@ -19,10 +19,10 @@ class ExtendedCronTabListTest {
 
     ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
     List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
-    assertThat(wrappers.size(), is(1));
+    assertEquals(1, wrappers.size());
     CronTabWrapper wrapper = wrappers.get(0);
     Map<String, String> parameters = wrapper.getParameters();
-    assertThat(parameters, is(nullValue()));
+    assertNull(parameters);
   }
 
   @Test
@@ -34,11 +34,11 @@ class ExtendedCronTabListTest {
 
     ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
     List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
-    assertThat(wrappers.size(), is(1));
+    assertEquals(1, wrappers.size());
     CronTabWrapper wrapper = wrappers.get(0);
     Map<String, String> parameters = wrapper.getParameters();
-    assertThat(parameters, is(notNullValue()));
-    assertThat(parameters.get("p1"), is("test"));
+    assertNotNull(parameters);
+    assertEquals("test", parameters.get("p1"));
   }
 
   @Test
@@ -52,14 +52,14 @@ class ExtendedCronTabListTest {
 
     ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
     List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
-    assertThat(wrappers.size(), is(1));
+    assertEquals(1, wrappers.size());
     CronTabWrapper wrapper = wrappers.get(0);
     Map<String, String> parameters = wrapper.getParameters();
-    assertThat(parameters, is(notNullValue()));
-    assertThat(parameters.size(), is(3));
-    assertThat(parameters.get("p1"), is("test"));
-    assertThat(parameters.get("p2"), is("test2"));
-    assertThat(parameters.get("p3"), is("3"));
+    assertNotNull(parameters);
+    assertEquals(3, parameters.size());
+    assertEquals("test", parameters.get("p1"));
+    assertEquals("test2", parameters.get("p2"));
+    assertEquals("3", parameters.get("p3"));
   }
 
   @Test
@@ -83,26 +83,26 @@ class ExtendedCronTabListTest {
 
     ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
     List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
-    assertThat(wrappers.size(), is(4));
+    assertEquals(4, wrappers.size());
     CronTabWrapper wrapper = wrappers.get(0);
     Map<String, String> parameters = wrapper.getParameters();
-    assertThat(parameters, is(notNullValue()));
-    assertThat(parameters.size(), is(3));
-    assertThat(parameters.get("p1"), is("test"));
-    assertThat(parameters.get("p2"), is("test2"));
-    assertThat(parameters.get("p3"), is("3\ncontinuation"));
+    assertNotNull(parameters);
+    assertEquals(3, parameters.size());
+    assertEquals("test", parameters.get("p1"));
+    assertEquals("test2", parameters.get("p2"));
+    assertEquals("3\ncontinuation", parameters.get("p3"));
     wrapper = wrappers.get(2);
     parameters = wrapper.getParameters();
-    assertThat(parameters, is(notNullValue()));
-    assertThat(parameters.size(), is(2));
-    assertThat(parameters.get("p1"), is("morning\n coffee\n\nat 8 AM"));
-    assertThat(parameters.get("p2"), is("foo"));
+    assertNotNull(parameters);
+    assertEquals(2, parameters.size());
+    assertEquals("morning\n coffee\n\nat 8 AM", parameters.get("p1"));
+    assertEquals("foo", parameters.get("p2"));
     wrapper = wrappers.get(1);
     parameters = wrapper.getParameters();
-    assertThat(parameters, is(nullValue()));
+    assertNull(parameters);
     wrapper = wrappers.get(3);
     parameters = wrapper.getParameters();
-    assertThat(parameters, is(nullValue()));
+    assertNull(parameters);
   }
 
   @Test
@@ -115,11 +115,11 @@ class ExtendedCronTabListTest {
 
     ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
     List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
-    assertThat(wrappers.size(), is(1));
+    assertEquals(1, wrappers.size());
     CronTabWrapper wrapper = wrappers.get(0);
     Map<String, String> parameters = wrapper.getParameters();
-    assertThat(parameters, is(notNullValue()));
-    assertThat(parameters.get("p1"), is("test\nline2"));
+    assertNotNull(parameters);
+    assertEquals("test\nline2", parameters.get("p1"));
   }
 
   @Test
@@ -137,16 +137,30 @@ class ExtendedCronTabListTest {
 
     ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
     List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
-    assertThat(wrappers.size(), is(2));
+    assertEquals(2, wrappers.size());
     CronTabWrapper wrapper = wrappers.get(0);
     Map<String, String> parameters = wrapper.getParameters();
-    assertThat(parameters, is(notNullValue()));
-    assertThat(parameters.size(), is(2));
-    assertThat(parameters.get("p1"), is("test"));
-    assertThat(parameters.get("p2"), is("test2"));
+    assertNotNull(parameters);
+    assertEquals(2, parameters.size());
+    assertEquals("test", parameters.get("p1"));
+    assertEquals("test2", parameters.get("p2"));
     wrapper = wrappers.get(1);
     parameters = wrapper.getParameters();
-    assertThat(parameters, is(nullValue()));
+    assertNull(parameters);
+  }
+
+  @Test
+  void testTimeZone() {
+    String spec = """
+        TZ=Asia/Tokyo
+        H 22 * * *
+        """;
+
+    ExtendedCronTabList ectl = ExtendedCronTabList.create(spec, null);
+    List<CronTabWrapper> wrappers = ectl.getCronTabWrapperList();
+    assertEquals(1, wrappers.size());
+    CronTabWrapper wrapper = wrappers.get(0);
+    assertEquals(wrapper.getCronTab().getTimeZone(), TimeZone.getTimeZone("Asia/Tokyo"));
   }
 
 }
