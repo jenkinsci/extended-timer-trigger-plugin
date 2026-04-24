@@ -31,7 +31,7 @@ public class ExtendedCronTab {
   private static final int[] UPPER_BOUNDS = new int[] {59, 23, 28, 12, 6};
   private static final String[] FIELD_NAMES = new String[] {"Minute", "Hour", "Day-of-Month", "Month", "Day-of-Week"};
 
-  private static final Pattern pattern = Pattern.compile("^H\\((\\d)+-(\\d+)\\)$");
+  private static final Pattern pattern = Pattern.compile("^H\\((\\d+)-(\\d+)\\)$");
 
   private final Cron cron;
   private final ZoneId zoneId;
@@ -62,7 +62,7 @@ public class ExtendedCronTab {
     int lowerBound = LOWER_BOUNDS[field];
     int upperBound = UPPER_BOUNDS[field];
     if (tokens[field].equals("H")) {
-      tokens[field] = String.valueOf(hash.next(upperBound) + lowerBound);
+      tokens[field] = String.valueOf(hash.next(upperBound + 1 - lowerBound) + lowerBound);
       return;
     }
     Matcher m = pattern.matcher(tokens[field]);
