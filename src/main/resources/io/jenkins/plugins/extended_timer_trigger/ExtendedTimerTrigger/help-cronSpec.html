@@ -1,7 +1,10 @@
 <div>
   Trigger runs based on a cron like schedule. You can use the regular Jenkins syntax but also an extended syntax.
   See the tables below for reference.<br/>
-  The extended syntax has limited support for the <b>H</b> character. It can only be used standalone and not in combination with ranges or intervals.<br/>
+  In the extended syntax the special character `H` has the same meaning as in the Jenkins provided `Build periodically` trigger
+  and behaves the same as in the Jenkins provided `Build periodically` trigger. It stands for a random value
+  (based on the hash of the job name) and is used to spread out load evenly.
+
   <br/>
   <b>Timezone</b><br/>
   To specify a different timezone use
@@ -125,8 +128,8 @@
       </tr>
       <tr>
         <td>H</td>
-        <td>Stands for a random value (based on the hash of the job name). Must be used standalone or in combination with a range e.g. <em>H(0-4)</em>.
-        In the Day-of-Month field values are chosen in the 1-28 range.</td>
+        <td>Stands for a random value (based on the hash of the job name). Must be used standalone or in combination with a range e.g. *H(0-4)*,
+          *H(0-29)/5* or *H/15*. In the Day-of-Month field values are chosen in the 1-28 range.</td>
       </tr>
     </tbody>
   </table>

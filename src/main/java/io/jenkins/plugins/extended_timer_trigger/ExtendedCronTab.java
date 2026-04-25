@@ -31,7 +31,8 @@ public class ExtendedCronTab {
   private static final int[] UPPER_BOUNDS = new int[] {59, 23, 28, 12, 6};
   private static final String[] FIELD_NAMES = new String[] {"Minute", "Hour", "Day-of-Month", "Month", "Day-of-Week"};
 
-  private static final Pattern pattern = Pattern.compile("^H\\((\\d+)-(\\d+)\\)$");
+  private static final Pattern rangePattern = Pattern.compile("^H\\((\\d+)-(\\d+)\\)(/(-?\\d+))?$");
+  private static final Pattern stepPattern = Pattern.compile("^H/(\\d+)$");
 
   private final Cron cron;
   private final ZoneId zoneId;
@@ -65,22 +66,58 @@ public class ExtendedCronTab {
       tokens[field] = String.valueOf(hash.next(upperBound + 1 - lowerBound) + lowerBound);
       return;
     }
-    Matcher m = pattern.matcher(tokens[field]);
+    Matcher m = rangePattern.matcher(tokens[field]);
     if (m.matches()) {
       int lower = Integer.parseInt(m.group(1));
       int upper = Integer.parseInt(m.group(2));
-      if (lower < lowerBound) {
-        throw new IllegalArgumentException(Messages.ExtendedCronTab_OutOfRange(lower, lowerBound, upperBound, FIELD_NAMES[field]));
+      int step = 1;
+      String stepStr = m.group(4);
+      if (stepStr != null) {
+        step = Integer.parseInt(m.group(4));
       }
-      if (upper > upperBound) {
-        throw new IllegalArgumentException(Messages.ExtendedCronTab_OutOfRange(upper, lowerBound, upperBound, FIELD_NAMES[field]));
-      }
-      if (lower > upper) {
-        throw new IllegalArgumentException(Messages.ExtendedCronTab_LowerUpper(lower, upper));
-      }
-      tokens[field] = String.valueOf(hash.next(upper + 1 - lower) + lower);
+      String unhashed = hashToString(lower, upper, step, field, hash);
+      tokens[field] = unhashed;
+      return;
+    }
+    m = stepPattern.matcher(tokens[field]);
+    if (m.matches()) {
+      int step = Integer.parseInt(m.group(1));
+      String unhashed = hashToString(lowerBound, upperBound, step, field, hash);
+      tokens[field] = unhashed;
     }
   }
+
+  private String hashToString(int lower, int upper, int step, int field, Hash hash) {
+    rangeCheck(lower, field);
+    rangeCheck(upper, field);
+    StringBuilder builder = new StringBuilder();
+    if (lower > upper) {
+      throw new IllegalArgumentException(Messages.ExtendedCronTab_LowerUpper(lower, upper));
+    }
+    if (step > upper - lower + 1) {
+      throw new IllegalArgumentException(Messages.ExtendedCronTab_OutOfRange(step, 1, upper - lower + 1, FIELD_NAMES[field]));
+    } else if (step > 1) {
+      for (int i = hash.next(step) + lower; i <= upper; i += step) {
+        if (!builder.isEmpty()) {
+          builder.append(",");
+        }
+        builder.append(i);
+      }
+      return builder.toString();
+    } else if (step <= 0) {
+      throw new IllegalArgumentException(Messages.ExtendedCronTab_MustBePositive(step));
+    } else {
+      // step=1 (i.e. omitted) in the case of hash is actually special; means pick one value, not step by 1
+      return Integer.toString(lower + hash.next(upper + 1 - lower));
+    }
+  }
+
+  protected void rangeCheck(int value, int field) {
+    if (value < LOWER_BOUNDS[field] || UPPER_BOUNDS[field] < value) {
+      throw new IllegalArgumentException(Messages.ExtendedCronTab_OutOfRange(value, LOWER_BOUNDS[field], UPPER_BOUNDS[field], FIELD_NAMES[field]));
+    }
+  }
+
 
   public boolean check(ZonedDateTime time) {
     if (zoneId != null) {
