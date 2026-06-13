@@ -16,6 +16,7 @@ import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.PeriodicWork;
 import hudson.scheduler.Hash;
+import hudson.scheduler.RareOrImpossibleDateException;
 import hudson.triggers.TimerTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -119,18 +120,34 @@ public class ExtendedTimerTrigger extends Trigger<Job<?, ?>> {
     }
 
     private void updateValidationsForNextRun(Collection<FormValidation> validations, ExtendedCronTabList ectl) {
-      ZonedDateTime prev = ectl.previous();
-      ZonedDateTime next = ectl.next();
-      if (prev != null && next != null) {
-        Locale locale = Stapler.getCurrentRequest2() != null
-            ? Stapler.getCurrentRequest2().getLocale()
-            : Locale.getDefault();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm zzz", locale);
-        validations.add(FormValidation.ok(Messages.ExtendedTimerTrigger_would_last_have_run_at_would_next_run_at(prev.format(formatter), next.format(formatter))));
-      } else {
-        validations.add(FormValidation.warning(Messages.ExtendedTimerTrigger_no_schedules_so_will_never_run()));
+      try {
+        ZonedDateTime prev = ectl.previous();
+        ZonedDateTime next = ectl.next();
+        if (prev != null && next != null) {
+          Locale locale = Stapler.getCurrentRequest2() != null
+              ? Stapler.getCurrentRequest2().getLocale()
+              : Locale.getDefault();
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm zzz", locale);
+          validations.add(FormValidation.ok(Messages.ExtendedTimerTrigger_would_last_have_run_at_would_next_run_at(prev.format(formatter), next.format(formatter))));
+          checkRareDate(prev, next, validations);
+        } else {
+          validations.add(FormValidation.warning(Messages.ExtendedTimerTrigger_no_schedules_so_will_never_run()));
+        }
+      } catch (RareOrImpossibleDateException ex) {
+        validations.add(FormValidation.warning(Messages.ExtendedTimerTrigger_rare_or_impossible()));
       }
     }
+
+    private void checkRareDate(@NonNull ZonedDateTime prev, @NonNull ZonedDateTime next, Collection<FormValidation> validations) {
+      ZonedDateTime now = ZonedDateTime.now();
+      now.withZoneSameInstant(next.getZone());
+      ZonedDateTime plusTwoYears = now.plusYears(2);
+      ZonedDateTime minusTwoYears = now.minusYears(2);
+      if (prev.isBefore(minusTwoYears) || next.isAfter(plusTwoYears)) {
+        validations.add(FormValidation.warning(Messages.ExtendedTimerTrigger_rare()));
+      }
+    }
+
   }
 
   private List<ParameterValue> configureParameterValues(Map<String, String> parameterValues) {
